@@ -1,5 +1,10 @@
 export interface GameInfo {
-    ID: string;
-    Title: string;
-    ArtistName: string
+    id: string;
+    title: string;
+    artist_name: string
+}
+
+export interface StreamInfo {
+    id: string;
+    streams: number
 }
