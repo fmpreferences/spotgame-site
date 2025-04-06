@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { BtnData, GameInfo } from "$lib/types";
-    import { onMount } from "svelte";
     import type { PageProps } from "../$types";
+    import StartingSlider from "../StartingSlider.svelte"	
 
     let { data }: PageProps = $props();
 
@@ -14,6 +14,23 @@
     let btn_data: BtnData[] = $state(data.btn_data);
 
     async function populate_button_data() {
+        const response = await fetch("/api/1.0/get-album-art", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ids: [...new Set(game_values.map((e) => e.id))],
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const response_data = await response.json();
+        let album_art_info = response_data.album_art_info;
+
         let unique_ids_map = new Map<string, GameInfo[]>();
         game_values.forEach((game_info) => {
             if (!unique_ids_map.has(game_info.id)) {
@@ -33,6 +50,7 @@
                         return e.artist_name;
                     })
                     .join(", "),
+                album_art: album_art_info[id],
             };
             btn_data.push(btn_d);
         });
@@ -97,17 +115,23 @@
 <div>
     {#if btn_data.length > 0}
         {#each btn_data as button_data}
-            <button class="main-btn"
+            <button
+                class="main-btn"
                 onclick={() => check_higher(button_data.id)}
                 disabled={game_over}
+                style="background-image: url({button_data.album_art})"
             >
-                <h1>{button_data.title}</h1>
-                <h3>{button_data.artist_names}</h3>
-                {#if streamcounts != null}
-                    <h4>
-                        {streamcounts[button_data.id].toLocaleString("en-US")}
-                    </h4>
-                {/if}
+                <div class="white-cover">
+                    <h1>{button_data.title}</h1>
+                    <h3>{button_data.artist_names}</h3>
+                    {#if streamcounts != null}
+                        <h4>
+                            {streamcounts[button_data.id].toLocaleString(
+                                "en-US",
+                            )}
+                        </h4>
+                    {/if}
+                </div>
             </button>
         {/each}
     {/if}
@@ -121,6 +145,11 @@
 
 <style>
     .main-btn {
-        width: 20vw; height: 20vw;
+        width: 640px;
+        height: 640px;
+    }
+
+    .white-cover {
+        background-color: rgba(255, 255, 255, 0.85);
     }
 </style>

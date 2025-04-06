@@ -26,6 +26,23 @@ export const load: PageLoad = async ({ fetch }) => {
             }
         });
 
+        const response2 = await fetch("/api/1.0/get-album-art", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ids: [...new Set(game_values.map((e) => e.id))],
+            }),
+        });
+
+        if (!response2.ok) {
+            throw new Error(`Error: ${response2.status}`);
+        }
+
+        const response_data = await response2.json();
+        let album_art_info = response_data.album_art_info;
+
         let btn_data: BtnData[] = [];
         unique_ids_map.forEach((game_infos: GameInfo[], id: string) => {
             const btn_d: BtnData = {
@@ -36,6 +53,7 @@ export const load: PageLoad = async ({ fetch }) => {
                         return e.artist_name;
                     })
                     .join(", "),
+                album_art: album_art_info[id]
             };
             btn_data.push(btn_d);
         });
