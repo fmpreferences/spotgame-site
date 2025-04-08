@@ -2,6 +2,7 @@ export interface GameInfo {
     id: string;
     title: string;
     artist_name: string
+    album_art: string
 }
 
 export interface StreamInfo {

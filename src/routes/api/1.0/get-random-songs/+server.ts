@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { type GameInfo } from "$lib/types.js"
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-    const { n } = await request.json();
+    const { n, min_streams } = await request.json();
 
     if (n <= 0) {
         return new Response(JSON.stringify({ error: 'Nothing is requested!' }), {
@@ -14,8 +14,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const loadDataPromise = new Promise<GameInfo[]>((resolve, reject) => {
         const db = locals.db;
-        const query = `select distinct a.title, a.id, c.artist_name from tracks a join track_artists b on a.id = b.id join artists c on b.artist_id = c.artist_id
-        where a.id in (select id from buckets where Bucket = 'edm' order by random() limit ${n})`;
+        const query = `select distinct a.title, a.id, c.artist_name, album_art from tracks a join track_artists b on a.id = b.id join artists c on b.artist_id = c.artist_id
+        where a.id in (select d.id from tracks d join buckets e on d.id = e.id where streams >= ${min_streams} and bucket = 'edm' order by random() limit ${n})`;
         db.all<GameInfo>(query, (err: Error | null, rows: GameInfo[]) => {
             if (err) {
                 reject(err);
