@@ -44,7 +44,7 @@
       btn_data.push(btn_d);
     });
 
-    random_vals_promise = new Promise<BtnData[]>((fulfil, reject) => {
+    return new Promise<BtnData[]>((fulfil, reject) => {
       setTimeout(() => {
         if (!response.ok) {
           reject(new Error(`Error: ${response.status}`));
@@ -75,9 +75,10 @@
       streamcounts = response_data.streamcounts;
       if (response_data.correct) {
         score += 1;
+        let promise = get_random_vals();
         await new Promise((res) => setTimeout(res, 3500));
         streamcounts = null;
-        get_random_vals();
+        random_vals_promise = promise;
       } else {
         game_over = true;
       }
@@ -95,13 +96,13 @@
         type="number"
         bind:value={minstreams}
         min="250000000"
-        max="2000000000"
+        max="1250000000"
       />
       <input
         type="range"
         bind:value={minstreams}
         min="250000000"
-        max="2000000000"
+        max="1250000000"
       />
     </label>
 
@@ -118,7 +119,7 @@
     <button
       onclick={() => {
         pregame = false;
-        get_random_vals();
+        random_vals_promise = get_random_vals();
       }}
     >
       Start!
