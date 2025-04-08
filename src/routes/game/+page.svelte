@@ -1,10 +1,5 @@
 <script lang="ts">
   import type { BtnData, GameInfo } from "$lib/types";
-  // import type { PageProps } from "../$types";
-
-  // let { data }: PageProps = $props();
-
-  let game_values: GameInfo[] = $state([]);
 
   let streamcounts: any = $state(null);
   let game_over = $state(false);
@@ -14,6 +9,8 @@
   let pregame = $state(true);
   let minstreams = $state(250000000);
   let n_pulls = $state(2);
+
+  let random_vals_promise: Promise<BtnData[]> = $state(Promise.resolve([]));
 
   async function get_random_vals() {
     const response = await fetch("/api/1.0/get-random-songs", {
@@ -26,19 +23,6 @@
 
     const response_data = await response.json();
     let game_values: GameInfo[] = response_data.random_songs;
-
-    const response2 = await fetch("/api/1.0/get-album-art", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ids: [...new Set(game_values.map((e) => e.id))],
-      }),
-    });
-
-    const response2_data = await response2.json();
-    let album_art_info = response2_data.album_art_info;
 
     let unique_ids_map = new Map<string, GameInfo[]>();
     game_values.forEach((game_info) => {
@@ -54,19 +38,13 @@
       const btn_d: BtnData = {
         id: id,
         title: game_infos[0].title,
-        artist_names: game_infos
-          .map((e: GameInfo) => {
-            return e.artist_name;
-          })
-          .join(", "),
-        album_art: album_art_info[id],
+        artist_names: game_infos.map((e: GameInfo) => e.artist_name).join(", "),
+        album_art: game_infos[0].album_art,
       };
       btn_data.push(btn_d);
     });
 
-    console.log(btn_data);
-
-    return new Promise<BtnData[]>((fulfil, reject) => {
+    random_vals_promise = new Promise<BtnData[]>((fulfil, reject) => {
       setTimeout(() => {
         if (!response.ok) {
           reject(new Error(`Error: ${response.status}`));
@@ -76,7 +54,7 @@
     });
   }
 
-  async function check_higher(chosen_id: string) {
+  async function check_higher(chosen_id: string, btn_data: BtnData[]) {
     try {
       const response = await fetch("/api/1.0/get-streams", {
         method: "POST",
@@ -85,7 +63,7 @@
         },
         body: JSON.stringify({
           chosen_id,
-          ids: [...new Set(game_values.map((e) => e.id))],
+          ids: [...new Set(btn_data.map((e) => e.id))],
         }),
       });
 
@@ -117,13 +95,13 @@
         type="number"
         bind:value={minstreams}
         min="250000000"
-        max="3000000000"
+        max="2000000000"
       />
       <input
         type="range"
         bind:value={minstreams}
         min="250000000"
-        max="3000000000"
+        max="2000000000"
       />
     </label>
 
@@ -140,16 +118,17 @@
     <button
       onclick={() => {
         pregame = false;
+        get_random_vals();
       }}
     >
       Start!
     </button>
   {:else}
-    {#await get_random_vals() then btn_data}
+    {#await random_vals_promise then btn_data}
       {#each btn_data as button_data}
         <button
           class="main-btn"
-          onclick={() => check_higher(button_data.id)}
+          onclick={() => check_higher(button_data.id, btn_data)}
           disabled={game_over}
           style="background-image: url({button_data.album_art})"
         >
