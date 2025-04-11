@@ -1,19 +1,20 @@
 export interface GameInfo {
-    id: string;
-    title: string;
+    id: string
+    title: string
     artist_name: string
     album_art: string
+    artist_index: number
 }
 
 export interface StreamInfo {
-    id: string;
+    id: string
     streams: number
 }
 
 export interface BtnData {
-    id: string;
-    title: string;
-    artist_names: string,
+    id: string
+    title: string
+    artist_names: string
     album_art: string
 }
 

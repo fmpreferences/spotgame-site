@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { type StreamInfo } from "$lib/types.js"
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-    const { chosen_id, ids } = await request.json();
+    const { ids } = await request.json();
 
     if (!ids) {
         return new Response(JSON.stringify({ error: 'Nothing is requested!' }), {
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
     return json({
         success: true,
-        correct: max_id == chosen_id,
+        correct: max_id,
         streamcounts: streamcounts
     });
 }
