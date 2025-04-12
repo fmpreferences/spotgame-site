@@ -11,9 +11,31 @@
   let minstreams = $state(300000000);
   let n_pulls = $state(2);
 
-  let random_vals_promise: Promise<BtnData[]> = $state(Promise.resolve([]));
+  let random_vals_promise: Promise<SongButtonOptions[]> = $state(
+    Promise.resolve([])
+  );
   let truthy: Map<string, string> = $state(new Map<string, string>());
 
+  class SongButtonOptions {
+    id: string = $state("");
+    title: string = $state("");
+    artist_names: string = $state("");
+    album_art: string = $state("");
+    back_color = $state("rgba(255,255,255,0.85)");
+    streamcount = $state(-1);
+
+    constructor(
+      id: string,
+      title: string,
+      artist_names: string,
+      album_art: string
+    ) {
+      this.id = id;
+      this.title = title;
+      this.artist_names = artist_names;
+      this.album_art = album_art;
+    }
+  }
   async function get_random_vals() {
     const response = await fetch("/api/1.0/get-random-songs", {
       method: "POST",
@@ -35,22 +57,22 @@
       }
     });
 
-    let btn_data: BtnData[] = [];
+    let btn_data: SongButtonOptions[] = [];
     unique_ids_map.forEach((game_infos: GameInfo[], id: string) => {
-      const btn_d: BtnData = {
-        id: id,
-        title: game_infos[0].title,
-        artist_names: game_infos.map((e: GameInfo) => e.artist_name).join(", "),
-        album_art: game_infos[0].album_art,
-      };
+      const btn_d: SongButtonOptions = new SongButtonOptions(
+        id,
+        game_infos[0].title,
+        game_infos.map((e: GameInfo) => e.artist_name).join(", "),
+        game_infos[0].album_art
+      );
       btn_data.push(btn_d);
     });
 
     truthy.clear();
-    game_values.forEach((e) => truthy.set(e.id, "neutral-cover"));
+    game_values.forEach((e) => truthy.set(e.id, "rgba(255,255,255,0.85)"));
     truthy = truthy;
 
-    return new Promise<BtnData[]>((fulfil, reject) => {
+    return new Promise<SongButtonOptions[]>((fulfil, reject) => {
       setTimeout(() => {
         if (!response.ok) {
           reject(new Error(`Error: ${response.status}`));
@@ -62,7 +84,10 @@
 
   onMount(() => (random_vals_promise = get_random_vals()));
 
-  async function check_higher(chosen_id: string, btn_data: BtnData[]) {
+  async function check_higher(
+    chosen_id: string,
+    btn_data: SongButtonOptions[]
+  ) {
     try {
       const response = await fetch("/api/1.0/get-streams", {
         method: "POST",
@@ -70,7 +95,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ids: [...new Set(btn_data.map((e) => e.id))],
+          ids: btn_data.map((e) => e.id),
         }),
       });
 
@@ -81,15 +106,14 @@
       let response_data = await response.json();
       streamcounts = response_data.streamcounts;
 
-      btn_data.forEach((e: any) => {
+      btn_data.forEach((e: SongButtonOptions, i: number) => {
+        e.streamcount = streamcounts[i];
         if (e.id == response_data.correct) {
-          truthy.set(e.id, "correct-cover");
+          e.back_color = "rgba(0,255,0,0.85)";
         } else {
-          truthy.set(e.id, "incorrect-cover");
+          e.back_color = "rgba(255,0,0,0.85)";
         }
       });
-
-      truthy = truthy;
 
       if (response_data.correct == chosen_id) {
         score += 1;
@@ -158,12 +182,12 @@
           disabled={game_over}
           style="background-image: url({button_data.album_art})"
         >
-          <div class={truthy.get(button_data.id)}>
+          <div class="cover" style="--result-color: {button_data.back_color}">
             <h1>{button_data.title}</h1>
             <h3>{button_data.artist_names}</h3>
-            {#if streamcounts != null}
+            {#if button_data.streamcount >= 0}
               <h4>
-                {streamcounts[button_data.id].toLocaleString("en-US")}
+                {button_data.streamcount.toLocaleString("en-US")}
               </h4>
             {/if}
           </div>
@@ -185,15 +209,7 @@
     height: 640px;
   }
 
-  .neutral-cover {
-    background-color: rgba(255, 255, 255, 0.85);
-  }
-
-  .correct-cover {
-    background-color: rgba(0, 255, 0, 0.85);
-  }
-
-  .incorrect-cover {
-    background-color: rgba(255, 0, 0, 0.85);
+  .cover {
+    background-color: var(--result-color);
   }
 </style>

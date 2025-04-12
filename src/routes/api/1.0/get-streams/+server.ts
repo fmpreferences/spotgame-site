@@ -26,9 +26,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const rows = await loadDataPromise;
     let max_id: string = '', max_streams = 0;
-    let streamcounts: Record<string, number> = {};
+    let streamcounts: number[] = Array(ids.length);
+
     rows.forEach((val: StreamInfo) => {
-        streamcounts[val.id] = val.streams;
+        streamcounts[ids.indexOf(val.id)] = val.streams;
         if (val.streams > max_streams) {
             max_id = val.id;
             max_streams = val.streams;
