@@ -1,20 +1,39 @@
 <script lang="ts">
-  import type { BtnData, GameInfo } from "$lib/types";
+  import type { GameInfo } from "$lib/types";
   import { onMount } from "svelte";
 
-  let streamcounts: any = $state(null);
   let game_over = $state(false);
   let score = $state(0);
 
   // logic for the inputs before the game
   let pregame = $state(true);
-  let minstreams = $state(300000000);
+  let pregame_error = $state("");
+  let minstreams = $state(250000000);
   let n_pulls = $state(2);
+  let min_year = $state(1000);
+  let max_year = $state(new Date().getFullYear());
 
   let random_vals_promise: Promise<SongButtonOptions[]> = $state(
     Promise.resolve([])
   );
   let truthy: Map<string, string> = $state(new Map<string, string>());
+
+  class CatBox {
+    genre: string;
+    checked = $state(true);
+
+    constructor(genre: string) {
+      this.genre = genre;
+    }
+  }
+
+  let cats = $state(
+    ["latin", "rnb", "edm", "rock", "country", "pop", "hiphop", "indie"].map(
+      (e) => new CatBox(e)
+    )
+  );
+
+  let active_cats = $derived(cats.filter((e) => e.checked));
 
   class SongButtonOptions {
     id: string = $state("");
@@ -36,13 +55,28 @@
       this.album_art = album_art;
     }
   }
+
+  async function validate_pregame() {
+    if (min_year > max_year) {
+      pregame_error = "Min Year must be lower than Max Year";
+      return;
+    }
+
+    pregame = false;
+  }
   async function get_random_vals() {
     const response = await fetch("/api/1.0/get-random-songs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ n: n_pulls, min_streams: minstreams }),
+      body: JSON.stringify({
+        n: n_pulls,
+        min_streams: minstreams,
+        min_year,
+        max_year,
+        active: active_cats,
+      }),
     });
 
     const response_data = await response.json();
@@ -104,7 +138,7 @@
       }
 
       let response_data = await response.json();
-      streamcounts = response_data.streamcounts;
+      let streamcounts = response_data.streamcounts;
 
       btn_data.forEach((e: SongButtonOptions, i: number) => {
         e.streamcount = streamcounts[i];
@@ -137,15 +171,15 @@
       <input
         type="number"
         bind:value={minstreams}
-        min="300000000"
-        max="1300000000"
+        min="250000000"
+        max="1250000000"
         onchange={() => (random_vals_promise = get_random_vals())}
       />
       <input
         type="range"
         bind:value={minstreams}
-        min="300000000"
-        max="1300000000"
+        min="250000000"
+        max="1250000000"
         onchange={() => (random_vals_promise = get_random_vals())}
       />
     </label>
@@ -172,7 +206,41 @@
 
     <br />
 
-    <button onclick={() => (pregame = false)}> Start! </button>
+    <label>
+      Min Year:
+      <input
+        type="number"
+        bind:value={min_year}
+        min="1"
+        max="9999"
+        onchange={() => (random_vals_promise = get_random_vals())}
+      />
+    </label>
+
+    <label>
+      Max Year:
+      <input
+        type="number"
+        bind:value={max_year}
+        min="1"
+        max="9999"
+        onchange={() => (random_vals_promise = get_random_vals())}
+      />
+    </label>
+    <br />
+
+    {#each cats as cat}
+      <label
+        ><input type="checkbox" bind:checked={cat.checked} />{cat.genre}</label
+      >
+    {/each}
+    <br />
+    <button onclick={validate_pregame}> Start! </button>
+    <br />
+
+    {#if pregame_error != ""}
+      <p>{pregame_error}</p>
+    {/if}
   {:else}
     {#await random_vals_promise then btn_data}
       {#each btn_data as button_data}
