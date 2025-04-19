@@ -25,4 +25,5 @@ vite.config.ts.timestamp-*
 .dev.vars*
 
 *.sqlite3
+*.sql
 .vscode

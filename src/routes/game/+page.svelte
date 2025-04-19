@@ -112,7 +112,7 @@
       if (!unique_ids_map.has(game_info.id)) {
         unique_ids_map.set(game_info.id, [game_info]);
       } else {
-        unique_ids_map.get(game_info.id).push(game_info);
+        unique_ids_map.get(game_info.id)?.push(game_info);
       }
     });
 
