@@ -22,5 +22,7 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-package-lock.json
+.dev.vars*
+
 *.sqlite3
+.vscode
