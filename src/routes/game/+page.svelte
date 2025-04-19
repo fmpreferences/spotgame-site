@@ -8,10 +8,11 @@
   // logic for the inputs before the game
   let pregame = $state(true);
   let pregame_error = $state("");
-  let minstreams = $state(250000000);
+  let minstreams = $state(400000000);
   let n_pulls = $state(2);
   let min_year = $state(1000);
   let max_year = $state(new Date().getFullYear());
+  let song_count = $state(-1);
 
   let random_vals_promise: Promise<SongButtonOptions[]> = $state(
     Promise.resolve([])
@@ -28,7 +29,7 @@
   }
 
   let cats = $state(
-    ["latin", "rnb", "edm", "rock", "country", "pop", "hiphop", "indie"].map(
+    ["latin", "rnb", "edm", "rock", "country", "pop", "hiphop", "other"].map(
       (e) => new CatBox(e)
     )
   );
@@ -61,9 +62,33 @@
       pregame_error = "Min Year must be lower than Max Year";
       return;
     }
+    if (n_pulls > song_count) {
+      pregame_error = "Too little songs!";
+      return;
+    }
 
     pregame = false;
   }
+
+  async function pregame_prep() {
+    random_vals_promise = get_random_vals();
+    const response = await fetch("/api/1.0/get-number-songs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        n: n_pulls,
+        min_streams: minstreams,
+        min_year,
+        max_year,
+        active: active_cats,
+      }),
+    });
+    const response_data = await response.json();
+    song_count = response_data.count;
+  }
+
   async function get_random_vals() {
     const response = await fetch("/api/1.0/get-random-songs", {
       method: "POST",
@@ -116,7 +141,7 @@
     });
   }
 
-  onMount(() => (random_vals_promise = get_random_vals()));
+  onMount(pregame_prep);
 
   async function check_higher(
     chosen_id: string,
@@ -173,14 +198,14 @@
         bind:value={minstreams}
         min="250000000"
         max="1250000000"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
       <input
         type="range"
         bind:value={minstreams}
         min="250000000"
         max="1250000000"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
     </label>
 
@@ -193,14 +218,14 @@
         bind:value={n_pulls}
         min="2"
         max="10"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
       <input
         type="range"
         bind:value={n_pulls}
         min="2"
         max="10"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
     </label>
 
@@ -213,7 +238,7 @@
         bind:value={min_year}
         min="1"
         max="9999"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
     </label>
 
@@ -224,17 +249,24 @@
         bind:value={max_year}
         min="1"
         max="9999"
-        onchange={() => (random_vals_promise = get_random_vals())}
+        onchange={pregame_prep}
       />
     </label>
     <br />
 
     {#each cats as cat}
       <label
-        ><input type="checkbox" bind:checked={cat.checked} />{cat.genre}</label
+        ><input
+          type="checkbox"
+          bind:checked={cat.checked}
+          onchange={pregame_prep}
+        />{cat.genre}</label
       >
     {/each}
     <br />
+    {#if song_count > -1}
+      <p>There are {song_count} songs.</p>
+    {/if}
     <button onclick={validate_pregame}> Start! </button>
     <br />
 
@@ -267,6 +299,14 @@
 
     {#if game_over}
       <div>YOU DIED!!!</div>
+      <button
+        onclick={() => {
+          game_over = false;
+          score = 0;
+          pregame_prep();
+          validate_pregame();
+        }}>Restart</button
+      >
     {/if}
   {/if}
 </div>
