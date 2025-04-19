@@ -8,7 +8,7 @@
   // logic for the inputs before the game
   let pregame = $state(true);
   let pregame_error = $state("");
-  let minstreams = $state(400000000);
+  let minstreams = $state(400);
   let n_pulls = $state(2);
   let min_year = $state(1000);
   let max_year = $state(new Date().getFullYear());
@@ -79,14 +79,14 @@
       },
       body: JSON.stringify({
         n: n_pulls,
-        min_streams: minstreams,
+        min_streams: minstreams * 1e6,
         min_year,
         max_year,
         active: active_cats,
       }),
     });
     const response_data = await response.json();
-    song_count = response_data.count;
+    song_count = response_data?.count;
   }
 
   async function get_random_vals() {
@@ -97,7 +97,7 @@
       },
       body: JSON.stringify({
         n: n_pulls,
-        min_streams: minstreams,
+        min_streams: minstreams * 1e6,
         min_year,
         max_year,
         active: active_cats,
@@ -105,7 +105,7 @@
     });
 
     const response_data = await response.json();
-    let game_values: GameInfo[] = response_data.random_songs;
+    let game_values: GameInfo[] = response_data?.random_songs;
 
     let unique_ids_map = new Map<string, GameInfo[]>();
     game_values.forEach((game_info) => {
@@ -163,18 +163,18 @@
       }
 
       let response_data = await response.json();
-      let streamcounts = response_data.streamcounts;
+      let streamcounts = response_data?.streamcounts;
 
       btn_data.forEach((e: SongButtonOptions, i: number) => {
         e.streamcount = streamcounts[i];
-        if (e.id == response_data.correct) {
+        if (e.id == response_data?.correct) {
           e.back_color = "rgba(0,255,0,0.85)";
         } else {
           e.back_color = "rgba(255,0,0,0.85)";
         }
       });
 
-      if (response_data.correct == chosen_id) {
+      if (response_data?.correct == chosen_id) {
         score += 1;
         let promise = get_random_vals();
         await new Promise((res) => setTimeout(res, 2000));
@@ -196,15 +196,15 @@
       <input
         type="number"
         bind:value={minstreams}
-        min="250000000"
-        max="1250000000"
+        min="250"
+        max="1500"
         onchange={pregame_prep}
       />
       <input
         type="range"
         bind:value={minstreams}
-        min="250000000"
-        max="1250000000"
+        min="250"
+        max="1500"
         onchange={pregame_prep}
       />
     </label>
