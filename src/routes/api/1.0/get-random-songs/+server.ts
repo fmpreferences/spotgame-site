@@ -21,11 +21,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
         streams >= ${min_streams} and bucket in (${active.map((e: any) => `'${e.genre}'`)}) order by random() limit ${n})`
     ).run();
 
-    console.log(rows?.results);
-    
-    
-
-
     return json({
         random_songs: rows?.results.map(value => ({ value, sort: Math.random() }))
             .sort((a, b) => a.sort - b.sort)
