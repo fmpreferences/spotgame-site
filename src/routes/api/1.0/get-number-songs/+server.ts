@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { type GameInfo } from "$lib/types.js"
 
 export const POST: RequestHandler = async ({ request, platform }) => {
     const { n, min_streams, min_year, max_year, active } = await request.json();

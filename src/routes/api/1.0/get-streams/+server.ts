@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { type StreamInfo } from "$lib/types.js"
 
 export const POST: RequestHandler = async ({ request, platform }) => {
     const { ids } = await request.json();
