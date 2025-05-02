@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  CLOUDFLARE_ACCOUNT_ID: 7fd71f29389f51d18953088fac047108
+
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
