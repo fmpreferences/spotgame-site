@@ -13,6 +13,7 @@
   let min_year = $state(1000);
   let max_year = $state(new Date().getFullYear());
   let song_count = $state(-1);
+  let paused = $state(false);
 
   let random_vals_promise: Promise<SongButtonOptions[]> = $state(
     Promise.resolve([])
@@ -175,11 +176,13 @@
       });
 
       if (response_data?.correct == chosen_id) {
+        paused = true;
         score += 1;
         let promise = get_random_vals();
         await new Promise((res) => setTimeout(res, 2000));
         streamcounts = null;
         random_vals_promise = promise;
+        paused = false;
       } else {
         game_over = true;
       }
@@ -278,7 +281,11 @@
       {#each btn_data as button_data}
         <button
           class="main-btn"
-          onclick={() => check_higher(button_data.id, btn_data)}
+          onclick={() => {
+            if (!paused) {
+              check_higher(button_data.id, btn_data);
+            }
+          }}
           disabled={game_over}
           style="background-image: url({button_data.album_art})"
         >
