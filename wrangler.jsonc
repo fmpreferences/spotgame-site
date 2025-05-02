@@ -13,6 +13,7 @@
 	"observability": {
 		"enabled": true
 	},
+	"account_id": "7fd71f29389f51d18953088fac047108",
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
