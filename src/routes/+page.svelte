@@ -1,5 +1,7 @@
 <form action="/game">
     <input type="submit" value="Start" />
+    <h1>DATABASE IN MAINTENAACNE</h1>
+
     <h1>FAQ:</h1>
     <h3>WTF is this?</h3>
     <p>My version of <a href="https://www.higherorlowergame.com/spotify/songs/">Higher or Lower: Spotify</a>. The issue with the original was the genre categorization was suspect, there were random songs with 69 million listens because of the way things were categorized. In addition, it was only updated yearly. Try the genre organization yourself!</p>

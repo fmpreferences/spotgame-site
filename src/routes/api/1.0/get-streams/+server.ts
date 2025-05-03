@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
         });
     }
     const rows = await platform?.env.DB.prepare(
-        `select id, streams from tracks where id in (${ids.map((e: string) => `'${e}'`).join(',')});`
+        `select id, streams from tracks where id in (${ids.map((e: string) => `'${e}'`)});`
     ).run();
 
     let max_id: string = '', max_streams = 0;
