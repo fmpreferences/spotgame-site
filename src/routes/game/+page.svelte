@@ -320,11 +320,13 @@
 
 <style>
   .main-btn {
-    width: 640px;
-    height: 640px;
+    width: 40em;
+    height: 40em;
+    background-size: cover;
   }
 
   .cover {
     background-color: var(--result-color);
+    font-size: 1.5em;
   }
 </style>
