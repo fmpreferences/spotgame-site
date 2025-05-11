@@ -195,7 +195,7 @@
 <div>
   {#if pregame}
     <label>
-      Min Streams (in thousands):
+      Min Streams (in millions):
       <input
         type="number"
         bind:value={minstreams}
