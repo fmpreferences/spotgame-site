@@ -320,8 +320,8 @@
 
 <style>
   .main-btn {
-    width: 40em;
-    height: 40em;
+    width: 30em;
+    height: 30em;
     background-size: cover;
   }
 
