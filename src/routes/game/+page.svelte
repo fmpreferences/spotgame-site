@@ -14,9 +14,10 @@
   let max_year = $state(new Date().getFullYear());
   let song_count = $state(-1);
   let paused = $state(false);
+  let easymode = $state(false);
 
   let random_vals_promise: Promise<SongButtonOptions[]> = $state(
-    Promise.resolve([])
+    Promise.resolve([]),
   );
   let truthy: Map<string, string> = $state(new Map<string, string>());
 
@@ -31,8 +32,8 @@
 
   let cats = $state(
     ["latin", "rnb", "edm", "rock", "country", "pop", "hiphop", "other"].map(
-      (e) => new CatBox(e)
-    )
+      (e) => new CatBox(e),
+    ),
   );
 
   let active_cats = $derived(cats.filter((e) => e.checked));
@@ -42,6 +43,7 @@
     title: string = $state("");
     artist_names: string = $state("");
     album_art: string = $state("");
+    year: number = $state(-1);
     back_color = $state("rgba(255,255,255,0.85)");
     streamcount = $state(-1);
 
@@ -49,7 +51,7 @@
       id: string,
       title: string,
       artist_names: string,
-      album_art: string
+      album_art: string,
     ) {
       this.id = id;
       this.title = title;
@@ -79,7 +81,6 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        n: n_pulls,
         min_streams: minstreams * 1e6,
         min_year,
         max_year,
@@ -123,8 +124,11 @@
         id,
         game_infos[0].title,
         game_infos.map((e: GameInfo) => e.artist_name).join(", "),
-        game_infos[0].album_art
+        game_infos[0].album_art,
       );
+      if (easymode) {
+        btn_d.year = Number.parseInt(game_infos[0].date.substring(0, 4));
+      }
       btn_data.push(btn_d);
     });
 
@@ -146,7 +150,7 @@
 
   async function check_higher(
     chosen_id: string,
-    btn_data: SongButtonOptions[]
+    btn_data: SongButtonOptions[],
   ) {
     try {
       const response = await fetch("/api/1.0/get-streams", {
@@ -174,18 +178,24 @@
           e.back_color = "rgba(255,0,0,0.85)";
         }
       });
-
-      if (response_data?.correct == chosen_id) {
-        paused = true;
-        score += 1;
-        let promise = get_random_vals();
-        await new Promise((res) => setTimeout(res, 2000));
-        streamcounts = null;
-        random_vals_promise = promise;
-        paused = false;
+      if (response_data?.correct != chosen_id) {
+        if (easymode) {
+          score--;
+        }
+        if (score < 0 || !easymode) {
+          game_over = true;
+          return;
+        }
       } else {
-        game_over = true;
+        score++;
       }
+
+      paused = true;
+      let promise = get_random_vals();
+      await new Promise((res) => setTimeout(res, 2000));
+      streamcounts = null;
+      random_vals_promise = promise;
+      paused = false;
     } catch {
       throw new Error("");
     }
@@ -220,14 +230,14 @@
         type="number"
         bind:value={n_pulls}
         min="2"
-        max="10"
+        max="12"
         onchange={pregame_prep}
       />
       <input
         type="range"
         bind:value={n_pulls}
         min="2"
-        max="10"
+        max="12"
         onchange={pregame_prep}
       />
     </label>
@@ -270,6 +280,15 @@
     {#if song_count > -1}
       <p>There are {song_count} songs.</p>
     {/if}
+    <label
+      ><input
+        type="checkbox"
+        bind:checked={easymode}
+        onchange={pregame_prep}
+      />Easy mode: Wrong answer deducts 1 score instead of getting game over
+      screen, only game over if score is negative. Shows years</label
+    >
+    <br />
     <button onclick={validate_pregame}> Start! </button>
     <br />
 
@@ -292,6 +311,9 @@
           <div class="cover" style="--result-color: {button_data.back_color}">
             <h1>{button_data.title}</h1>
             <h3>{button_data.artist_names}</h3>
+            {#if button_data.year >= 0}
+              <h3>{button_data.year}</h3>
+            {/if}
             {#if button_data.streamcount >= 0}
               <h4>
                 {button_data.streamcount.toLocaleString("en-US")}
@@ -304,6 +326,14 @@
 
     <div>{score}</div>
 
+    {#if easymode && !game_over}
+      <button
+        onclick={() => {
+          game_over = true;
+        }}>Concede</button
+      >
+    {/if}
+
     {#if game_over}
       <div>YOU DIED!!!</div>
       <button
@@ -315,6 +345,7 @@
         }}>Restart</button
       >
     {/if}
+
   {/if}
 </div>
 
