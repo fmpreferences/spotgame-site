@@ -410,6 +410,8 @@
       >
       {#if score > 18}
         <button onclick={upload_leaderboard}>Save Run</button>
+      {:else}
+        <div>Score at least 18 to get on the leaderboards!</div>
       {/if}
     {/if}
   {/if}

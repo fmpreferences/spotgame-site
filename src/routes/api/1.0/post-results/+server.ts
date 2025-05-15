@@ -34,6 +34,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
         "song_count"	INTEGER,
         "easy"	INTEGER,
         "timestamp"	TEXT,
+        "username"	TEXT,
         PRIMARY KEY("id")
     );`
     ).run();
