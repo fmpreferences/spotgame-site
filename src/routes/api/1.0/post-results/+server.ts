@@ -1,17 +1,17 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import Sqids from 'sqids'
+import { nanoid } from 'nanoid';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
     const { n, min_streams, min_year, max_year, enabled, song_count, easy, timestamp, results } = await request.json();
 
     const sq = new Sqids();
 
-    const hashable = [].concat(...results).map((e: any) => JSON.parse(e).streamcount); 
-    // console.log(hashable.join(', '));
+    // const hashable = [].concat(...results.map((e: any) => e.slice(0, 2))).slice(0, 8).map((e: any) => JSON.parse(e).streamcount % 1048576);
 
 
-    const id = sq.encode(hashable);
+    const id = nanoid();
 
     await platform?.env.DB.prepare(
         `CREATE TABLE IF NOT EXISTS "leaderboard"  (
@@ -38,7 +38,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     );`
     ).run();
 
-    // console.log(typeof (id), typeof (n), typeof (min_streams), typeof (min_year), typeof (max_year), typeof (enabled), typeof (song_count), typeof (easy?1:0), typeof (timestamp));
 
     await platform?.env.DB.prepare(
         `insert into leaderboard_settings values (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
@@ -59,8 +58,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     let promises = results.map(async (e: any, i: number) => {
         let promises2 = e.map(async (e1: any, j: number) => {
             e1 = JSON.parse(e1);
-            // console.log(typeof (id), typeof (e1.title), typeof (e1.artist_names), typeof (e1.album_art), typeof (e1.back_color), typeof (e1.streamcount), typeof (i), typeof (j));
-
             await platform?.env.DB.prepare(
                 `insert into leaderboard values (?, ?, ?, ?, ?, ?, ?, ?);`,
             )

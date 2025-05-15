@@ -408,7 +408,9 @@
           validate_pregame();
         }}>Restart</button
       >
-      <button onclick={upload_leaderboard}>Save Run</button>
+      {#if score > 18}
+        <button onclick={upload_leaderboard}>Save Run</button>
+      {/if}
     {/if}
   {/if}
 </div>
