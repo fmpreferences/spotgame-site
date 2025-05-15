@@ -1,9 +1,15 @@
 <script lang="ts">
-  import type { GameInfo } from "$lib/types";
+  import type {
+    GameInfo,
+    GetNumberSongsResult,
+    GetRandomSongsResult,
+    GetStreamsResult,
+  } from "$lib/types";
   import { onMount } from "svelte";
 
   let game_over = $state(false);
   let score = $state(0);
+  let record: string[][] = $state([]);
 
   // logic for the inputs before the game
   let pregame = $state(true);
@@ -58,6 +64,19 @@
       this.artist_names = artist_names;
       this.album_art = album_art;
     }
+
+    public clone(): SongButtonOptions {
+      let options = new SongButtonOptions(
+        this.id,
+        this.title,
+        this.artist_names,
+        this.album_art,
+      );
+      options.year = this.year;
+      options.back_color = this.back_color;
+      options.streamcount = this.streamcount;
+      return options;
+    }
   }
 
   async function validate_pregame() {
@@ -87,7 +106,7 @@
         active: active_cats,
       }),
     });
-    const response_data = await response.json();
+    const response_data = await response.json<GetNumberSongsResult>();
     song_count = response_data?.count;
   }
 
@@ -106,7 +125,7 @@
       }),
     });
 
-    const response_data = await response.json();
+    const response_data = await response.json<GetRandomSongsResult>();
     let game_values: GameInfo[] = response_data?.random_songs;
 
     let unique_ids_map = new Map<string, GameInfo[]>();
@@ -148,6 +167,34 @@
 
   onMount(pregame_prep);
 
+  async function upload_leaderboard() {
+    try {
+      const response = await fetch("/api/1.0/post-results", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          n: n_pulls,
+          min_streams: minstreams,
+          min_year,
+          max_year,
+          enabled: active_cats.map((e: CatBox) => e.genre).join(", "),
+          song_count,
+          easy: easymode,
+          timestamp: new Date(),
+          results: record,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+    } catch {
+      throw new Error("");
+    }
+  }
+
   async function check_higher(
     chosen_id: string,
     btn_data: SongButtonOptions[],
@@ -167,7 +214,7 @@
         throw new Error(`Server returned ${response.status}`);
       }
 
-      let response_data = await response.json();
+      let response_data = await response.json<GetStreamsResult>();
       let streamcounts = response_data?.streamcounts;
 
       btn_data.forEach((e: SongButtonOptions, i: number) => {
@@ -178,6 +225,18 @@
           e.back_color = "rgba(255,0,0,0.85)";
         }
       });
+      let recorded = btn_data.map((e: SongButtonOptions) =>
+        JSON.stringify({
+          id: e.id,
+          title: e.title,
+          artist_names: e.artist_names,
+          album_art: e.album_art,
+          back_color: e.back_color,
+          streamcount: e.streamcount,
+        }),
+      );
+      record.push(recorded);
+
       if (response_data?.correct != chosen_id) {
         if (easymode) {
           score--;
@@ -193,7 +252,7 @@
       paused = true;
       let promise = get_random_vals();
       await new Promise((res) => setTimeout(res, 2000));
-      streamcounts = null;
+      streamcounts = [];
       random_vals_promise = promise;
       paused = false;
     } catch {
@@ -324,7 +383,11 @@
       {/each}
     {/await}
 
-    <div>{score}</div>
+    {#if easymode}
+      <div>{score} / {record.length}</div>
+    {:else}
+      <div>{score}</div>
+    {/if}
 
     {#if easymode && !game_over}
       <button
@@ -340,12 +403,13 @@
         onclick={() => {
           game_over = false;
           score = 0;
+          record = [];
           pregame_prep();
           validate_pregame();
         }}>Restart</button
       >
+      <button onclick={upload_leaderboard}>Save Run</button>
     {/if}
-
   {/if}
 </div>
 

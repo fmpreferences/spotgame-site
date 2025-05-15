@@ -19,6 +19,19 @@ export interface BtnData {
 }
 
 export interface AlbumArtInfo {
-    id: string;
+    id: string
     album_art: string
+}
+
+export interface GetNumberSongsResult {
+    count: number
+}
+
+export interface GetRandomSongsResult {
+    random_songs: any[]
+}
+
+export interface GetStreamsResult {
+    correct: string
+    streamcounts: number[]
 }

@@ -29,7 +29,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
         // error
     }
     return json({
-        success: true,
         correct: max_id,
         streamcounts: streamcounts
     });
