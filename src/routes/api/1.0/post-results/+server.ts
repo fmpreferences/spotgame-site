@@ -53,6 +53,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
             song_count,
             easy ? 1 : 0,
             timestamp,
+            'admin'
         )
         .run();
 
