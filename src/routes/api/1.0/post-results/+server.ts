@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 
     await platform?.env.DB.prepare(
-        `insert into leaderboard_settings values (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+        `insert into leaderboard_settings values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     )
         .bind(
             id,
@@ -53,7 +53,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
             song_count,
             easy ? 1 : 0,
             timestamp,
-            'admin'
+            'admin',
         )
         .run();
 
