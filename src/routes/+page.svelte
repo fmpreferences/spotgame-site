@@ -1,5 +1,8 @@
 <form action="/game">
     <input type="submit" value="Start" />
+    <h2>Notice May 2025</h2>
+    <p>I think kworb might have borked something on the <a href="https://kworb.net/spotify/toplists.html">leaderboard</a>, because "Lana Del Rey - Young And Beautiful [Lana Del Rey vs. Cedric Gervais]" nor "Gala - Freed From Desire (Edit Mix)" shouldn't be anywhere on there. Contact kworb if anything seems off on the leaderboard</p>
+
     <h1>FAQ:</h1>
     <h3>WTF is this?</h3>
     <p>My version of <a href="https://www.higherorlowergame.com/spotify/songs/">Higher or Lower: Spotify</a>. The issue with the original was the genre categorization was suspect, there were random songs with 69 million listens because of the way things were categorized. In addition, it was only updated yearly. Try the genre organization yourself!</p>

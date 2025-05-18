@@ -1,15 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import Sqids from 'sqids'
 import { nanoid } from 'nanoid';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
     const { n, min_streams, min_year, max_year, enabled, song_count, easy, timestamp, results } = await request.json();
-
-    const sq = new Sqids();
-
-    // const hashable = [].concat(...results.map((e: any) => e.slice(0, 2))).slice(0, 8).map((e: any) => JSON.parse(e).streamcount % 1048576);
-
 
     const id = nanoid();
 
