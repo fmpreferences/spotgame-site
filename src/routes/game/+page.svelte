@@ -9,6 +9,7 @@
 
   let game_over = $state(false);
   let score = $state(0);
+  let correct = $state(0);
   let record: string[][] = $state([]);
 
   // logic for the inputs before the game
@@ -23,7 +24,7 @@
   let easymode = $state(false);
 
   let random_vals_promise: Promise<SongButtonOptions[]> = $state(
-    Promise.resolve([]),
+    Promise.resolve([])
   );
   let truthy: Map<string, string> = $state(new Map<string, string>());
 
@@ -38,8 +39,8 @@
 
   let cats = $state(
     ["latin", "rnb", "edm", "rock", "country", "pop", "hiphop", "other"].map(
-      (e) => new CatBox(e),
-    ),
+      (e) => new CatBox(e)
+    )
   );
 
   let active_cats = $derived(cats.filter((e) => e.checked));
@@ -57,7 +58,7 @@
       id: string,
       title: string,
       artist_names: string,
-      album_art: string,
+      album_art: string
     ) {
       this.id = id;
       this.title = title;
@@ -70,7 +71,7 @@
         this.id,
         this.title,
         this.artist_names,
-        this.album_art,
+        this.album_art
       );
       options.year = this.year;
       options.back_color = this.back_color;
@@ -143,7 +144,7 @@
         id,
         game_infos[0].title,
         game_infos.map((e: GameInfo) => e.artist_name).join(", "),
-        game_infos[0].album_art,
+        game_infos[0].album_art
       );
       if (easymode) {
         btn_d.year = Number.parseInt(game_infos[0].date.substring(0, 4));
@@ -197,7 +198,7 @@
 
   async function check_higher(
     chosen_id: string,
-    btn_data: SongButtonOptions[],
+    btn_data: SongButtonOptions[]
   ) {
     try {
       const response = await fetch("/api/1.0/get-streams", {
@@ -233,7 +234,7 @@
           album_art: e.album_art,
           back_color: e.back_color,
           streamcount: e.streamcount,
-        }),
+        })
       );
       record.push(recorded);
 
@@ -247,6 +248,7 @@
         }
       } else {
         score++;
+        correct++;
       }
 
       paused = true;
@@ -383,11 +385,10 @@
       {/each}
     {/await}
 
-    {#if easymode}
-      <div>{score} / {record.length}</div>
-    {:else}
-      <div>{score}</div>
-    {/if}
+    <div>
+      Score: {score}
+      {#if easymode}| Winrate: {correct} / {record.length}{/if}
+    </div>
 
     {#if easymode && !game_over}
       <button
