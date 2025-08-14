@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
     const id = nanoid();
 
-    await platform?.env.DB.prepare(
+    await platform?.env.LB.prepare(
         `CREATE TABLE IF NOT EXISTS "leaderboard"  (
         "id"	TEXT,
         "title"	TEXT,
@@ -34,7 +34,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     ).run();
 
 
-    await platform?.env.DB.prepare(
+    await platform?.env.LB.prepare(
         `insert into leaderboard_settings values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     )
         .bind(
@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     let promises = results.map(async (e: any, i: number) => {
         let promises2 = e.map(async (e1: any, j: number) => {
             e1 = JSON.parse(e1);
-            await platform?.env.DB.prepare(
+            await platform?.env.LB.prepare(
                 `insert into leaderboard values (?, ?, ?, ?, ?, ?, ?, ?);`,
             )
                 .bind(

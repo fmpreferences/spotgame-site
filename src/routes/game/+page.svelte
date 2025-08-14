@@ -404,6 +404,7 @@
         onclick={() => {
           game_over = false;
           score = 0;
+          correct = 0;
           record = [];
           pregame_prep();
           validate_pregame();

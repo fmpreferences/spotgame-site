@@ -29,6 +29,11 @@
 			"binding": "DB",
 			"database_name": "spotifygame-db",
 			"database_id": "5b80eb2d-7f77-40ae-a44b-e2393e870e66"
+		},
+		{
+			"binding": "LB",
+			"database_name": "spotifygame-lb",
+			"database_id": "b809861f-b05f-43ba-9d6e-9abbdda5773d"
 		}
 	]
 	/**

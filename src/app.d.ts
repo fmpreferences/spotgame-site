@@ -10,6 +10,7 @@ declare global {
 		interface Platform {
 			env: {
 				DB: D1Database;
+				LB: D1Database;
 				COUNTER: DurableObjectNamespace;
 			};
 			context: {
